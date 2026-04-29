@@ -8,7 +8,7 @@ import org.bukkit.Material;
 public class GoldHelmet extends CustomArmor {
 
     public GoldHelmet() {
-        super("gold_helmet", Material.GOLDEN_HELMET, "&eGold Helmet &6&l$level",
+        super("gold_helmet", Material.GOLDEN_HELMET, "&eGold Helmet&6&l",
                 4.0, 2, 12, 18.0);
     }
 

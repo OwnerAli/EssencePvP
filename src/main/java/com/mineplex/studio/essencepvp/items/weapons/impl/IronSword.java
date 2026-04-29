@@ -3,13 +3,18 @@ package com.mineplex.studio.essencepvp.items.weapons.impl;
 import com.mineplex.studio.essencepvp.items.weapons.CustomWeapon;
 import com.mineplex.studio.essencepvp.levels.strategies.ExponentialLeveling;
 import com.mineplex.studio.essencepvp.levels.strategies.LevelingStrategy;
+import com.mineplex.studio.essencepvp.utils.ItemBuilder;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemFlag;
 
 public class IronSword extends CustomWeapon {
 
     public IronSword() {
-        super("iron_sword", new ItemStack(Material.IRON_SWORD), "&fIron Sword &7&l$level", 25,
+        super("iron_sword",
+                new ItemBuilder(Material.IRON_SWORD)
+                        .addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
+                        .build(),
+                "&fIron Sword&7&l", 25,
                 5, 30, 100);
     }
 

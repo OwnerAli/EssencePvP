@@ -116,16 +116,30 @@ public abstract class CustomItem {
                 .findFirst();
     }
 
-    public static void updateLevelDisplay(ItemStack itemStack) {
+    public static Optional<EnchantableItem> getEnchantableItemFromBukkitItem(ItemStack itemStack) {
+        // First get the CustomItem from the ItemStack
         Optional<CustomItem> customItemFromBukkitItem = getCustomItemFromBukkitItem(itemStack);
-        customItemFromBukkitItem.ifPresent(customItem -> {
-            if (!(customItem instanceof LevelableItem levelableItem)) return;
-            String itemDisplayName = customItem.getDisplayName().replace("$level",
-                    String.valueOf(levelableItem.getLevel(itemStack)));
-            ItemMeta itemMeta = itemStack.getItemMeta();
-            itemMeta.displayName(Component.text(itemDisplayName));
-            itemStack.setItemMeta(itemMeta);
-        });
+
+        // Return empty if no CustomItem was found
+        if (customItemFromBukkitItem.isEmpty()) return Optional.empty();
+
+        // Filter for CustomWeapon type, cast it, and return the first match
+        return customItemFromBukkitItem.stream()
+                .filter(customItem -> customItem instanceof EnchantableItem)
+                .map(customItem -> (EnchantableItem) customItem)
+                .findFirst();
+    }
+
+    public static void updateLevelDisplay(ItemStack itemStack) {
+//        Optional<CustomItem> customItemFromBukkitItem = getCustomItemFromBukkitItem(itemStack);
+//        customItemFromBukkitItem.ifPresent(customItem -> {
+//            if (!(customItem instanceof LevelableItem levelableItem)) return;
+//            String itemDisplayName = customItem.getDisplayName().replace("$level",
+//                    String.valueOf(levelableItem.getLevel(itemStack)));
+//            ItemMeta itemMeta = itemStack.getItemMeta();
+//            itemMeta.displayName(Component.text(itemDisplayName));
+//            itemStack.setItemMeta(itemMeta);
+//        });
     }
 
     public ItemStack createBukkitItem() {
@@ -150,7 +164,5 @@ public abstract class CustomItem {
 
         return itemStack;
     }
-
-    public abstract void applyPlaceholders();
 
 }

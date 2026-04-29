@@ -8,7 +8,7 @@ import org.bukkit.Material;
 public class GoldBoots extends CustomArmor {
 
     public GoldBoots() {
-        super("gold_boots", Material.GOLDEN_BOOTS, "&eGold Boots &6&l$level",
+        super("gold_boots", Material.GOLDEN_BOOTS, "&eGold Boots&6&l",
                 3.0, 2, 12, 12.0);
     }
 

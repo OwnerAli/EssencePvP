@@ -8,7 +8,7 @@ import org.bukkit.Material;
 public class LeatherChestplate extends CustomArmor {
 
     public LeatherChestplate() {
-        super("leather_chestplate", Material.LEATHER_CHESTPLATE, "&6Leather Chestplate &e&l$level",
+        super("leather_chestplate", Material.LEATHER_CHESTPLATE, "&6Leather Chestplate&e&l",
                 5.0, 2, 10, 20.0);
     }
 

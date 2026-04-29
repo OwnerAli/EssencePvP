@@ -8,7 +8,7 @@ import org.bukkit.Material;
 public class DiamondHelmet extends CustomArmor {
 
     public DiamondHelmet() {
-        super("diamond_helmet", Material.DIAMOND_HELMET, "&bDiamond Helmet &f&l$level",
+        super("diamond_helmet", Material.DIAMOND_HELMET, "&bDiamond Helmet&f&l",
                 6.0, 2, 20, 28.0);
     }
 

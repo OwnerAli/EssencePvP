@@ -17,18 +17,10 @@ public class LevelUpCommand extends Command {
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
         if (!(sender instanceof Player player)) return false;
 
-        int amount;
-
-        if (args.length > 0) {
-            amount = Integer.parseInt(args[0]);
-        } else {
-            amount = 1;
-        }
-
         ItemStack itemInMainHand = player.getInventory()
                 .getItemInMainHand();
 
-        CustomItem.getCustomWeaponFromBukkitItem(itemInMainHand)
+        CustomItem.getLevelableItemFromBukkitItem(itemInMainHand)
                 .ifPresent(customWeapon -> customWeapon.levelUpOneLevelAtATime(itemInMainHand));
 
         return true;

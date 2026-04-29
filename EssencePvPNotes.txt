@@ -1,0 +1,7 @@
+- Leather armor and swords are balanced
+- Add kill buffs like healing
+On Death
+1 - 5 doesn't lose anything
+6 - 20 loses 50% of essence
+21 - 30 loses all essence
+Level 31+ loses all non protected items

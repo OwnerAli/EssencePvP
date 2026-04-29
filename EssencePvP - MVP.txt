@@ -1,0 +1,18 @@
+EssencePvP - MVP
+
+BASICALLY DONE -- NEEDS EXP BAR + ESSENCE INCREASE WHEN KILLING
+- Custom item levels with custom values
+  - Gear = custom protection value
+  - Weapon = custom damage value
+
+FULLY DONE
+- Essence: life energy used to imbue armour/weapons with powers
+
+NOT STARTED
+- Enchants (item powers)
+  - 10 for launch
+
+ NOT STARTED
+- Progression system for items and players
+  - Item use requirements
+  - Perks?

@@ -1,17 +1,24 @@
 package com.mineplex.studio.essencepvp.items;
 
 import com.mineplex.studio.essencepvp.Essencepvp;
+import com.mineplex.studio.essencepvp.items.display_modules.DisplayModule;
+import com.mineplex.studio.essencepvp.items.display_modules.item_lore_modules.XPProgressModule;
 import com.mineplex.studio.essencepvp.levels.strategies.LevelingStrategy;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.text.NumberFormat;
+import java.util.Locale;
+import java.util.Set;
+
 /**
  * Interface for items that can gain levels and have attributes that scale with levels
  */
-public interface LevelableItem {
+public interface LevelableItem extends DisplayProvider {
     NamespacedKey XP_KEY = new NamespacedKey(Essencepvp.getInstance(), "xp");
     NamespacedKey LEVEL_KEY = new NamespacedKey(Essencepvp.getInstance(), "level");
 
@@ -41,6 +48,14 @@ public interface LevelableItem {
         ItemMeta itemMeta = itemStack.getItemMeta();
         itemMeta.getPersistentDataContainer().set(XP_KEY, PersistentDataType.DOUBLE, amount);
         itemStack.setItemMeta(itemMeta);
+        getDisplayModules().stream().filter(displayModule -> displayModule instanceof XPProgressModule)
+                .map(displayModule -> (XPProgressModule) displayModule)
+                .findAny()
+                .ifPresent(xpProgressModule -> xpProgressModule.update(itemStack));
+
+//        if (shouldHaveProgressBar()) {
+//            updateXPProgressBar(itemStack);
+//        }
     }
 
     /**
@@ -82,8 +97,9 @@ public interface LevelableItem {
         // If the real level is higher than the stored level, upgrade
         if (realLevel > currentLevel) {
             setStoredLevel(itemStack, realLevel);
-            CustomItem.updateLevelDisplay(itemStack);
         }
+
+        getDisplayModules().forEach(displayModule -> displayModule.update(itemStack));
     }
 
     /**
@@ -100,8 +116,9 @@ public interface LevelableItem {
         if (realLevel > currentLevel) {
             // Set the stored level to the real level (level up by one level)
             setStoredLevel(itemStack, currentLevel + 1);
-            CustomItem.updateLevelDisplay(itemStack); // Update the item display
         }
+
+        getDisplayModules().forEach(displayModule -> displayModule.update(itemStack));
     }
 
     /**
@@ -122,7 +139,7 @@ public interface LevelableItem {
     /**
      * Get the stored (displayed) level of the item.
      */
-    private int getStoredLevel(ItemStack itemStack) {
+    default int getStoredLevel(ItemStack itemStack) {
         return itemStack.getItemMeta().getPersistentDataContainer().getOrDefault(LEVEL_KEY, PersistentDataType.INTEGER, 1);
     }
 
@@ -163,6 +180,32 @@ public interface LevelableItem {
         }
 
         itemStack.setItemMeta(itemMeta);
+
+        int i = 0;
+        Set<DisplayModule> displayModules = getDisplayModules();
+        for (DisplayModule displayModule : displayModules) {
+            Bukkit.getScheduler().runTaskLaterAsynchronously(Essencepvp.getInstance(),
+                    () -> displayModule.apply(itemStack), i);
+            i++;
+        }
+    }
+
+    /**
+     * Calculates the XP progress within the current level.
+     *
+     * @param itemStack The item whose XP progress should be calculated.
+     * @return The percentage progress (e.g., 75%).
+     */
+    default int getXPProgressForLevel(ItemStack itemStack) {
+        double currentXP = getCurrentXP(itemStack);
+        int currentLevel = getStoredLevel(itemStack);
+        double xpForCurrentLevel = getLevelingStrategy().getXPForNextLevel(currentLevel - 1);
+        double xpForNextLevel = getLevelingStrategy().getXPForNextLevel(currentLevel);
+
+        double progressXP = currentXP - xpForCurrentLevel;
+        double neededXP = xpForNextLevel - xpForCurrentLevel;
+
+        return (int) Math.round((progressXP / neededXP) * 100);
     }
 
     /**

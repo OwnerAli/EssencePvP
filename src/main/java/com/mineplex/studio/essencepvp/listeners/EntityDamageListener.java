@@ -1,11 +1,15 @@
 package com.mineplex.studio.essencepvp.listeners;
 
+import com.mineplex.studio.essencepvp.enchantments.contexts.EnchantmentContext;
 import com.mineplex.studio.essencepvp.items.CustomItem;
 import com.mineplex.studio.essencepvp.items.armor.CustomArmor;
+import com.mineplex.studio.essencepvp.registry.impl.EnchantRegistry;
 import com.mineplex.studio.essencepvp.utils.Chat;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Entity;
@@ -19,7 +23,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Handles custom damage calculation for weapons and armor.
@@ -27,43 +30,9 @@ import java.util.List;
  */
 public class EntityDamageListener implements Listener {
 
-//    @EventHandler
-//    public void onDamage(EntityDamageByEntityEvent event) {
-//        // Reset damage to override default Minecraft damage calculation
-//        double initialDamage = 0;
-//        event.setDamage(initialDamage);
-//
-//        Entity damager = event.getDamager();
-//
-//        // Apply attacker's weapon damage if applicable
-//        if (damager instanceof Player attacker) {
-//            applyWeaponDamage(event, attacker);
-//        }
-//
-//        // Apply defender's armor defense if applicable
-//        if (event.getEntity() instanceof Player defender) {
-//            applyArmorDefense(event, defender);
-//            if (event.getDamage() >= defender.getHealth()) {
-//                List<ItemStack> drops = new ArrayList<>();
-//
-//                Bukkit.getPluginManager()
-//                        .callEvent(new PlayerDeathEvent(
-//                                defender,
-//                                DamageSource.builder(DamageType.GENERIC_KILL)
-//                                        .withDamageLocation(damager.getLocation())
-//                                        .withCausingEntity(damager)
-//                                        .build(),
-//                                drops,
-//                                0,
-//                                Component.empty()
-//                        ));
-//                defender.setHealth(20);
-//            }
-//        }
-//    }
-
     @EventHandler
     public void onDamage(EntityDamageEvent event) {
+        Chat.log(event.getDamageSource().getDamageType().toString());
         if (!(event.getEntity() instanceof Player defender)) return;
 
         if (event.getDamageSource().getCausingEntity() == null) {
@@ -77,13 +46,27 @@ public class EntityDamageListener implements Listener {
                 .getCausingEntity();
         if (causingEntity instanceof Player attacker) {
             applyWeaponDamage(event, attacker);
+            triggerDefenderEnchantments(defender, attacker, event);
         }
 
         // Apply defender's armor defense if applicable
         applyArmorDefense(event, defender);
         if (event.getDamage() >= defender.getHealth()) {
+            defender.getWorld().spawnParticle(
+                    Particle.DUST,
+                    defender.getLocation(),
+                    100, // Number of particles
+                    0.5, 0.5, 0.5, // Spread (X, Y, Z)
+                    new org.bukkit.Particle.DustOptions(org.bukkit.Color.RED, 1) // Red particle effect
+            );
+            causingEntity.getWorld()
+                    .playSound(
+                            defender.getLocation(),
+                            Sound.PARTICLE_SOUL_ESCAPE,
+                            3,
+                            3
+                    );
             event.setCancelled(true);
-            List<ItemStack> drops = new ArrayList<>();
 
             Bukkit.getPluginManager()
                     .callEvent(new PlayerDeathEvent(
@@ -93,7 +76,7 @@ public class EntityDamageListener implements Listener {
                                     .withCausingEntity(causingEntity)
                                     .withDirectEntity(causingEntity)
                                     .build(),
-                            drops,
+                            new ArrayList<>(),
                             0,
                             Component.empty()
                     ));
@@ -128,6 +111,9 @@ public class EntityDamageListener implements Listener {
                         Chat.tell(attacker, "&c&l* CRIT *");
                     }
                     Chat.tell(attacker, "&aYou dealt: " + event.getDamage() + " damage");
+                    customWeapon.getEnchantments(weapon)
+                            .forEach(enchantmentInstance -> enchantmentInstance.trigger(new EnchantmentContext(weapon,
+                                    enchantmentInstance.getLevel(), attacker, event.getEntity(), event)));
                 });
     }
 
@@ -147,6 +133,21 @@ public class EntityDamageListener implements Listener {
 
         Chat.tell(defender, "&2Defense: " + defense);
         Chat.tell(defender, "&bYou took " + finalDamage + " damage!");
+    }
+
+    private void triggerDefenderEnchantments(Player defender, Player attacker, EntityDamageEvent event) {
+        ItemStack[] armorContents = defender.getInventory().getArmorContents();
+        for (ItemStack armorPiece : armorContents) {
+            if (armorPiece == null) continue;
+
+            CustomItem.getEnchantableItemFromBukkitItem(armorPiece)
+                    .ifPresent(customItem -> customItem.getEnchantments(armorPiece)
+                            .forEach(enchantment -> EnchantRegistry.getInstance()
+                                    .get(enchantment.getEnchantmentID())
+                                    .ifPresent(ench -> ench.trigger(new EnchantmentContext(
+                                            armorPiece, enchantment.getLevel(), attacker, defender, event
+                                    )))));
+        }
     }
 
     private boolean isCritical(Player player) {

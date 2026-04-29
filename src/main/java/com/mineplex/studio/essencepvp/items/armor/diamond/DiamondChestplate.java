@@ -8,7 +8,7 @@ import org.bukkit.Material;
 public class DiamondChestplate extends CustomArmor {
 
     public DiamondChestplate() {
-        super("diamond_chestplate", Material.DIAMOND_CHESTPLATE, "&bDiamond Chestplate &f&l$level",
+        super("diamond_chestplate", Material.DIAMOND_CHESTPLATE, "&bDiamond Chestplate&f&l",
                 8.0, 2, 20, 40.0);
     }
 

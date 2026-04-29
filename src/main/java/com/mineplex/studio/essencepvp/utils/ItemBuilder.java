@@ -1,8 +1,13 @@
 package com.mineplex.studio.essencepvp.utils;
 
+import com.mineplex.studio.essencepvp.Essencepvp;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.UseCooldown;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -138,11 +143,23 @@ public class ItemBuilder {
         return this;
     }
 
+    public ItemBuilder setItemCooldown(float cooldown) {
+        item.setData(DataComponentTypes.USE_COOLDOWN,
+                UseCooldown.useCooldown(cooldown).build());
+        return this;
+    }
+
     public ItemStack build() {
         meta.setLore(lore);
+        addPlaceholderAttribute();
         enchants.forEach(item::addUnsafeEnchantment);
         item.setItemMeta(meta);
         return item;
+    }
+
+    private void addPlaceholderAttribute() {
+        meta.addAttributeModifier(Attribute.BURNING_TIME, new AttributeModifier(new NamespacedKey(Essencepvp.getInstance(), "burn-time"),
+                -1, AttributeModifier.Operation.ADD_NUMBER));
     }
 
 }

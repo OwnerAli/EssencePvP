@@ -1,11 +1,13 @@
 package com.mineplex.studio.essencepvp.items.weapons;
 
-import com.mineplex.studio.essencepvp.items.ActionableItem;
-import com.mineplex.studio.essencepvp.items.CustomItem;
-import com.mineplex.studio.essencepvp.items.DragAndDropReceivableItem;
-import com.mineplex.studio.essencepvp.items.LevelableItem;
+import com.mineplex.studio.essencepvp.items.*;
 import com.mineplex.studio.essencepvp.items.actions.holder.ItemActionHolder;
 import com.mineplex.studio.essencepvp.items.actions.impl.InventoryClickAction;
+import com.mineplex.studio.essencepvp.items.display_modules.DisplayModule;
+import com.mineplex.studio.essencepvp.items.display_modules.item_lore_modules.EnchantsModule;
+import com.mineplex.studio.essencepvp.items.display_modules.item_lore_modules.WeaponStatsModule;
+import com.mineplex.studio.essencepvp.items.display_modules.item_lore_modules.XPProgressModule;
+import com.mineplex.studio.essencepvp.items.display_modules.item_name_modules.LevelDisplayModule;
 import com.mineplex.studio.essencepvp.levels.strategies.ExponentialLeveling;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -13,7 +15,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Set;
 
-public abstract class CustomWeapon extends CustomItem implements LevelableItem, ActionableItem, DragAndDropReceivableItem {
+public abstract class CustomWeapon extends CustomItem implements LevelableItem, ActionableItem, EnchantableItem, DragAndDropReceivableItem {
     protected final double damageIncreasePerInterval;
     protected final int damageIncreaseInterval;
     protected final int levelDamageIncreaseCap;
@@ -32,7 +34,7 @@ public abstract class CustomWeapon extends CustomItem implements LevelableItem, 
         return calculateDamage(getLevel(itemStack));
     }
 
-    protected double calculateDamage(int level) {
+    public double calculateDamage(int level) {
         int levelMultiplier = Math.min(level, levelDamageIncreaseCap);
         double multiplier = 1 + damageIncreasePerInterval / 100;
         int power = levelMultiplier / damageIncreaseInterval;
@@ -46,13 +48,8 @@ public abstract class CustomWeapon extends CustomItem implements LevelableItem, 
         LevelableItem.super.applyLevelableDataToItem(bukkitItem);
         LevelableItem.super.applyXPAndAutoLevelUp(bukkitItem, getLevelingStrategy() instanceof ExponentialLeveling exponentialLeveling ?
                 exponentialLeveling.baseXP() : 0);
-        updateLevelDisplay(bukkitItem);
+        EnchantableItem.super.applyEnchantableDataToItem(bukkitItem);
         return bukkitItem;
-    }
-
-    @Override
-    public void applyPlaceholders() {
-        // TODO: IMPLEMENT
     }
 
     @Override
@@ -71,6 +68,16 @@ public abstract class CustomWeapon extends CustomItem implements LevelableItem, 
     }
 
     @Override
+    public Set<DisplayModule> getDisplayModules() {
+        return Set.of(
+                new LevelDisplayModule(this, false),
+                new EnchantsModule(this),
+                new XPProgressModule(this),
+                new WeaponStatsModule(this)
+        );
+    }
+
+    @Override
     public void receiveDragAndDrop(InventoryClickEvent event) {
         if (event.getCurrentItem() == null) return;
         ItemStack receivable = event.getCurrentItem();
@@ -79,6 +86,7 @@ public abstract class CustomWeapon extends CustomItem implements LevelableItem, 
         CustomItem.getCustomItemFromBukkitItem(applicable)
                 .ifPresent(customItem -> {
                     if (customItem instanceof LevelableItem levelableItem) {
+                        if (!(customItem instanceof DragAndDropApplicableItem)) return;
                         double currentXP = levelableItem.getCurrentXP(applicable);
                         LevelableItem.super.incrementXP(receivable, currentXP);
 

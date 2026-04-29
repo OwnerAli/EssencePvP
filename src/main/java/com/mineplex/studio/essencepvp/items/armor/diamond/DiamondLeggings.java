@@ -8,7 +8,7 @@ import org.bukkit.Material;
 public class DiamondLeggings extends CustomArmor {
 
     public DiamondLeggings() {
-        super("diamond_leggings", Material.DIAMOND_LEGGINGS, "&bDiamond Leggings &f&l$level",
+        super("diamond_leggings", Material.DIAMOND_LEGGINGS, "&bDiamond Leggings&f&l",
                 7.0, 2, 20, 34.0);
     }
 

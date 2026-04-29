@@ -6,10 +6,13 @@ import com.mineplex.studio.essencepvp.items.DragAndDropApplicableItem;
 import com.mineplex.studio.essencepvp.items.LevelableItem;
 import com.mineplex.studio.essencepvp.items.actions.holder.ItemActionHolder;
 import com.mineplex.studio.essencepvp.items.actions.impl.PlayerInteractAction;
+import com.mineplex.studio.essencepvp.items.display_modules.DisplayModule;
+import com.mineplex.studio.essencepvp.items.display_modules.item_name_modules.LevelDisplayModule;
 import com.mineplex.studio.essencepvp.levels.strategies.LevelingStrategy;
 import com.mineplex.studio.essencepvp.levels.strategies.StaticLeveling;
 import com.mineplex.studio.essencepvp.utils.ItemBuilder;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Set;
@@ -20,9 +23,10 @@ public class EssenceItem extends CustomItem implements LevelableItem, Actionable
         super(
                 "essence",
                 new ItemBuilder(Material.WIND_CHARGE)
+                        .addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
                         .glowing()
                         .build(),
-                "&6&l$level Essence"
+                "&e&l&6&lEssence"
         );
     }
 
@@ -31,13 +35,7 @@ public class EssenceItem extends CustomItem implements LevelableItem, Actionable
         ItemStack bukkitItem = super.createBukkitItem();
         LevelableItem.super.applyLevelableDataToItem(bukkitItem);
         LevelableItem.super.applyXP(bukkitItem, 0);
-        updateLevelDisplay(bukkitItem);
         return bukkitItem;
-    }
-
-    @Override
-    public void applyPlaceholders() {
-
     }
 
     @Override
@@ -50,6 +48,13 @@ public class EssenceItem extends CustomItem implements LevelableItem, Actionable
         return new ItemActionHolder(
                 Set.of(
                         new PlayerInteractAction(event -> event.setCancelled(true))));
+    }
+
+    @Override
+    public Set<DisplayModule> getDisplayModules() {
+        return Set.of(
+                new LevelDisplayModule(this, true)
+        );
     }
 
 }
